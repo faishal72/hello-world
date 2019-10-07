@@ -1,0 +1,483 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package RefusedBequestDetect;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+/**
+ *
+ * @author iShall
+ */
+public class Readfile {
+
+    public int indexFrom = 0;
+    public int indexTo = 0;
+     public int indexFromClass = 0;
+    public int indexToClass = 0;
+    public int index = 0;
+    public int indexinterface = 0;
+    public int idfrom = 0;
+    public int idto = 0;
+
+    List<String> tempsCurrentLine = null;
+    List<String> tempNameFrom = null;
+    List<String> tempNameTo = null;
+    private final String FILENAME = "D:\\class\\project.xml";
+    Controller_XML file = new Controller_XML();
+    Readfile az = null;
+    File_XML xml = null;
+
+    public List<String> Readfile(String namefile) throws ParserConfigurationException, SAXException, IOException, TransformerException {
+        xml = new File_XML(namefile);
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(xml.getFile());
+        doc.getDocumentElement();
+        NodeList nList = doc.getElementsByTagName("Class");
+        List<String> temp = new ArrayList<>();
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element eElement = (Element) nNode;
+                if (!eElement.hasAttribute("Background") && !eElement.hasAttribute("Idref")) {
+
+                    temp.add(toString(eElement));
+//                    System.out.println(toString(eElement));
+                }
+            }
+        }
+//        for (String a : temp) {
+//            System.out.println(a);
+//        }
+        return temp;
+    }
+
+    public List<String> readGeneralizationClassFrom(String namefile, int idfrom) throws ParserConfigurationException, SAXException, IOException, TransformerException {
+        xml = new File_XML(namefile);
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(xml.getFile());
+        doc.getDocumentElement();
+        List<String> tempFrom = new ArrayList<>();
+
+        NodeList nList = doc.getElementsByTagName("Generalization");
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element eElement = (Element) nNode;
+                if (!eElement.hasAttribute("Background") && !eElement.hasAttribute("Idref") && eElement.hasAttribute("Id")) {
+                    indexFromClass++;
+                    if (indexFromClass == idfrom) {
+                        tempFrom.add(eElement.getAttribute("From"));
+//                        tempNameFrom.add(eElement.getAttribute("Name"));
+//                        System.out.println(eElement.getAttribute("From"));
+                    }
+
+//                    tempFrom.add(eElement.getAttribute("To"));
+//
+//                    System.out.println(eElement.getAttribute("From"));
+//                    System.out.println(eElement.getAttribute("To"));
+//                    System.out.println(indexFrom);
+                }
+            }
+        }
+//        for (String a : tempFrom) {
+//            System.out.println(a);
+//        }
+        return tempFrom;
+    }
+    public List<String> getClassNameFrom(String filename, int idfrom) {
+        az = new Readfile();
+        List<String> filefrom = new ArrayList<>();
+        try {
+
+            for (String a : az.readGeneralizationClassFrom(filename, idfrom)) {
+//            System.out.println(a);
+                File fXmlFile = new File(file.getDirFile() + "\\output\\" + a + ".xml");
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                DocumentBuilder db = dbf.newDocumentBuilder();
+                Document doc = db.parse(fXmlFile);
+                doc.getDocumentElement();
+                NodeList nList = doc.getElementsByTagName("Class");
+//            indexFrom++;
+                //            System.out.println(indexFrom);
+                for (int i = 0; i < nList.getLength(); i++) {
+                    Node nNode = nList.item(i);
+                    if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                        Element eElement = (Element) nNode;
+
+                        filefrom.add(eElement.getAttribute("Name"));
+//                    System.out.println(eElement.getAttribute("Name"));
+//                    System.out.println(indexFrom);
+
+                    }
+                }
+            }
+//        for (String a : filefrom) {
+//            System.out.println(indexFrom);
+//            System.out.println(a);
+//        }
+
+        } catch (ParserConfigurationException | SAXException | IOException | TransformerException ex) {
+            Logger.getLogger(Readfile.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return filefrom;
+    }
+    
+    public List<String> readGeneralizationClassTo(String namefile, int idto) throws ParserConfigurationException, SAXException, IOException, TransformerException {
+        xml = new File_XML(namefile);
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(xml.getFile());
+        doc.getDocumentElement();
+
+        NodeList nList = doc.getElementsByTagName("Generalization");
+        List<String> tempto = new ArrayList<>();
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element eElement = (Element) nNode;
+                if (!eElement.hasAttribute("Background") && !eElement.hasAttribute("Idref") && eElement.hasAttribute("Id")) {
+                    indexToClass++;
+                    if (indexToClass == idto) {
+                        tempto.add(eElement.getAttribute("To"));
+//                        tempNameTo.add(eElement.getAttribute("Name"));
+
+//                        System.out.println(eElement.getAttribute("To"));
+                    }
+//                    System.out.println(eElement.getAttribute("Name"));
+                }
+            }
+        }
+//        for (String a : temp) {
+//            System.out.println(a);
+//        }
+        return tempto;
+    }
+
+    public List<String> getClassNameTo(String filename, int idfrom) {
+        az = new Readfile();
+        List<String> fileto = new ArrayList<>();
+        try {
+
+            for (String a : az.readGeneralizationClassTo(filename, idfrom)) {
+//            System.out.println(a);
+                File fXmlFile = new File(file.getDirFile() + "\\output\\" + a + ".xml");
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                DocumentBuilder db = dbf.newDocumentBuilder();
+                Document doc = db.parse(fXmlFile);
+                doc.getDocumentElement();
+                NodeList nList = doc.getElementsByTagName("Class");
+//            indexFrom++;
+                //            System.out.println(indexFrom);
+                for (int i = 0; i < nList.getLength(); i++) {
+                    Node nNode = nList.item(i);
+                    if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                        Element eElement = (Element) nNode;
+
+                        fileto.add(eElement.getAttribute("Name"));
+//                    System.out.println(eElement.getAttribute("Name"));
+//                    System.out.println(indexFrom);
+
+                    }
+                }
+            }
+//        for (String a : filefrom) {
+//            System.out.println(indexFrom);
+//            System.out.println(a);
+//        }
+
+        } catch (ParserConfigurationException | SAXException | IOException | TransformerException ex) {
+            Logger.getLogger(Readfile.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return fileto;
+    }
+
+    public void getIndexGeneralization(String filename) {
+        try {
+            xml = new File_XML(filename);
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document doc = db.parse(xml.getFile());
+            doc.getDocumentElement();
+
+            NodeList nList = doc.getElementsByTagName("Generalization");
+            List<String> tempFrom = new ArrayList<>();
+            for (int i = 0; i < nList.getLength(); i++) {
+                Node nNode = nList.item(i);
+
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) nNode;
+                    if (!eElement.hasAttribute("Background") && !eElement.hasAttribute("Idref") && eElement.hasAttribute("Id")) {
+
+                        index++;
+//                    tempFrom.add(eElement.getAttribute("To"));
+//                    
+//                    System.out.println(eElement.getAttribute("From"));
+//                    System.out.println(eElement.getAttribute("To"));
+                    }
+                }
+            }
+        } catch (ParserConfigurationException | SAXException | IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void getIndexInterface(String filename) {
+        try {
+            xml = new File_XML(filename);
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document doc = db.parse(xml.getFile());
+            doc.getDocumentElement();
+
+            NodeList nList = doc.getElementsByTagName("Stereotype");
+            List<String> tempFrom = new ArrayList<>();
+            for (int i = 0; i < nList.getLength(); i++) {
+                Node nNode = nList.item(i);
+
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) nNode;
+                    if (!eElement.hasAttribute("Abstract") && eElement.getAttribute("Name").equals("Interface")) {
+                        indexinterface++;
+                    }
+                }
+            }
+        } catch (ParserConfigurationException | SAXException | IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public List<String> readGeneralizationFrom(String namefile, int idfrom) throws ParserConfigurationException, SAXException, IOException, TransformerException {
+        xml = new File_XML(namefile);
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(xml.getFile());
+        doc.getDocumentElement();
+        List<String> tempFrom = new ArrayList<>();
+
+        NodeList nList = doc.getElementsByTagName("Generalization");
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element eElement = (Element) nNode;
+                if (!eElement.hasAttribute("Background") && !eElement.hasAttribute("Idref") && eElement.hasAttribute("Id")) {
+                    indexFrom++;
+                    if (indexFrom == idfrom) {
+                        tempFrom.add(eElement.getAttribute("From"));
+//                        tempNameFrom.add(eElement.getAttribute("Name"));
+//                        System.out.println(eElement.getAttribute("From"));
+                    }
+
+//                    tempFrom.add(eElement.getAttribute("To"));
+//
+//                    System.out.println(eElement.getAttribute("From"));
+//                    System.out.println(eElement.getAttribute("To"));
+//                    System.out.println(indexFrom);
+                }
+            }
+        }
+//        for (String a : tempFrom) {
+//            System.out.println(a);
+//        }
+        return tempFrom;
+    }
+
+    public List<String> openFileFrom(String filename, int idfrom) throws ParserConfigurationException, SAXException, IOException, TransformerException {
+        az = new Readfile();
+        List<String> filefrom = new ArrayList<>();
+        for (String a : az.readGeneralizationFrom(filename, idfrom)) {
+            File fXmlFile = new File(file.getDirFile() + "\\output\\" + a + ".xml");
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document doc = db.parse(fXmlFile);
+            doc.getDocumentElement();
+            NodeList nList = doc.getElementsByTagName("Operation");
+            for (int i = 0; i < nList.getLength(); i++) {
+                Node nNode = nList.item(i);
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) nNode;
+                    filefrom.add(eElement.getAttribute("Name"));
+                }
+            }
+        }
+        return filefrom;
+    }
+
+    public List<String> readGeneralizationTo(String namefile, int idto) throws ParserConfigurationException, SAXException, IOException, TransformerException {
+        xml = new File_XML(namefile);
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(xml.getFile());
+        doc.getDocumentElement();
+
+        NodeList nList = doc.getElementsByTagName("Generalization");
+        List<String> tempto = new ArrayList<>();
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element eElement = (Element) nNode;
+                if (!eElement.hasAttribute("Background") && !eElement.hasAttribute("Idref") && eElement.hasAttribute("Id")) {
+                    indexTo++;
+                    if (indexTo == idto) {
+                        tempto.add(eElement.getAttribute("To"));
+//                        tempNameTo.add(eElement.getAttribute("Name"));
+
+//                        System.out.println(eElement.getAttribute("To"));
+                    }
+//                    System.out.println(eElement.getAttribute("Name"));
+                }
+            }
+        }
+//        for (String a : temp) {
+//            System.out.println(a);
+//        }
+        return tempto;
+    }
+
+    public List<String> openFileTo(String filename, int idto) throws ParserConfigurationException, SAXException, IOException, TransformerException {
+        Readfile az = new Readfile();
+        List<String> fileto = new ArrayList<>();
+        for (String a : az.readGeneralizationTo(filename, idto)) {
+            File fXmlFile = new File(file.getDirFile() + "\\output\\" + a + ".xml");
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document doc = db.parse(fXmlFile);
+            doc.getDocumentElement();
+            NodeList nList = doc.getElementsByTagName("Operation");
+            for (int i = 0; i < nList.getLength(); i++) {
+                Node nNode = nList.item(i);
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) nNode;
+                    fileto.add(eElement.getAttribute("Name"));
+                }
+            }
+        }
+        return fileto;
+    }
+
+    public List<String> Read(String filename) {
+        File pseudo = new File(filename);
+        BufferedReader br = null;
+        FileReader fr = null;
+        this.tempsCurrentLine = new ArrayList<>();
+        try {
+            fr = new FileReader(pseudo);
+            br = new BufferedReader(fr);
+            String sCurrentLine;
+
+            while ((sCurrentLine = br.readLine()) != null) {
+                if (sCurrentLine.contains(" ")) {
+
+                    tempsCurrentLine.add(sCurrentLine);
+
+//                    System.out.println(tempsCurrentLine);
+                }
+            }
+//            for (String a : tempsCurrentLine) {
+//                System.out.println(a);
+//            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+
+            try {
+
+                if (br != null) {
+                    br.close();
+                }
+
+                if (fr != null) {
+                    fr.close();
+                }
+
+            } catch (IOException ex) {
+
+                ex.printStackTrace();
+
+            }
+        }
+        return this.tempsCurrentLine;
+    }
+
+    public List<String> getTempsCurrentLine() {
+
+        return this.tempsCurrentLine;
+    }
+
+    public int getIndexRealize() {
+        return this.index;
+    }
+
+    public int getIndexInterf() {
+        return this.indexinterface;
+    }
+
+    public int getIndexFrom() {
+        return this.indexFrom;
+    }
+
+    public List<String> getTempNameFrom() {
+        return this.tempNameFrom;
+    }
+
+    public List<String> getTempNameTo() {
+        return this.tempNameFrom;
+    }
+
+    public int getIndexTo() {
+        return this.indexTo;
+    }
+
+    private static String toString(Node node) throws IOException, TransformerException {
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+        StringWriter writer = new StringWriter();
+        transformer.transform(new DOMSource(node), new StreamResult(writer));
+        return writer.toString();
+    }
+
+    private String getAttributesAsString(NamedNodeMap attributes) {
+        StringBuilder sb = new StringBuilder("");
+        for (int j = 0; j < attributes.getLength(); j++) {
+            sb.append(attributes.item(j).getNodeName()).append(":").append(attributes.item(j).getNodeValue()).append(" ");
+        }
+        return sb.toString();
+
+    }
+
+//    public static void main(String[] args) throws Exception {
+//        Readfile a = new Readfile();
+//        a.readGeneralizationFrom("D:\\class\\project.xml", idfrin);
+//        a.getClassName("D:\\class\\project.xml",3);
+//        
+//    }
+}
